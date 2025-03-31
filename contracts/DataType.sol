@@ -5,22 +5,21 @@ contract DataType {
     uint256 public positiveNumber = 100;
     int256 public negativeNumber = -50;
     bool public isActive = true;
-    address public recipient;
-    address payable public wallet = payable(address(0));
-    bytes32 public fixedData =
-        0x3078616263646566313233343536000000000000000000000000000000000000;
+    address payable public recipient;
+    address public wallet = payable(address(0));
+    bytes32 public fixedData = "0xabcdef123456";
     bytes public dynamicData;
     enum State {
-        Created,
-        Active,
-        Inactive
+        Created, // 0
+        Active, // 1
+        Inactive // 2
     }
     State public currentState = State.Active;
 
     // 스마트 계약이 배포될 때 address 타입의 값을 인수로 받아 _recipient 변수에 저장
     constructor(address _recipient) {
         require(_recipient != address(0), "Invalid recipient address");
-        recipient = _recipient; // 전달받은 _recipent를 스마트 계약의 recipent 변수에 저장
+        recipient = payable(_recipient); // 전달받은 _recipent를 스마트 계약의 recipent 변수에 저장
     }
 
     function setPositiveNumber(uint256 _newPositiveNumber) public {
@@ -34,20 +33,32 @@ contract DataType {
     }
 
     function toggleActive() public {
-        isActive = !isActive;
+        isActive = !isActive; //isActive에 반대값 저장
     }
 
     event WalletUpdated(address indexed oldWallet, address indexed newWallet);
 
-    function setWallet(address payable _wallet) public {
-        require(_wallet != address(0), "Invalid wallet address");
-        wallet = _wallet;
+    function setWallet(address payable _newWallet) public {
+        require(_newWallet != address(0), "Invalid wallet address");
+
+        // 이전 wallet과 recipient 주소 저장
+        address oldWallet = wallet;
+        address oldRecipient = recipient;
+
+        // 새로운 wallet과 recipient 주소 설정
+        wallet = _newWallet;
+        recipient = _newWallet;
+
+        //이벤트 발생
+        emit WalletUpdated(oldWallet, _newWallet);
     }
 
     function setFixedData(bytes32 _fixedData) public {
+        require(_fixedData.length <= 32, "Data too long");
         fixedData = _fixedData;
     }
 
+    // bytes 는 가변이라 참조이기 때문에 어디서(memory에서인지 storage 에서 인지) 확인 하는지 적어야 함
     function setDynamicData(bytes memory _dynamicData) public {
         require(_dynamicData.length <= 32, "Data too long");
         dynamicData = _dynamicData;
