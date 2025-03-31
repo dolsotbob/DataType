@@ -36,21 +36,9 @@ contract DataType {
         isActive = !isActive; //isActive에 반대값 저장
     }
 
-    event WalletUpdated(address indexed oldWallet, address indexed newWallet);
-
     function setWallet(address payable _newWallet) public {
-        require(_newWallet != address(0), "Invalid wallet address");
-
-        // 이전 wallet과 recipient 주소 저장
-        address oldWallet = wallet;
-        address oldRecipient = recipient;
-
-        // 새로운 wallet과 recipient 주소 설정
         wallet = _newWallet;
-        recipient = _newWallet;
-
-        //이벤트 발생
-        emit WalletUpdated(oldWallet, _newWallet);
+        recipient = payable(_newWallet);
     }
 
     function setFixedData(bytes32 _fixedData) public {
